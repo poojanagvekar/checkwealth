@@ -129,8 +129,22 @@ class ReportGenerator:
         report_lines.append("=" * 80)
         
         # Write report to file
-        report_filename = f"{filename}_analysis_report.txt"
+        from werkzeug.utils import secure_filename
+        
+        # Sanitize filename to prevent path traversal
+        safe_filename = secure_filename(filename)
+        if not safe_filename:
+            safe_filename = 'report'
+        
+        report_filename = f"{safe_filename}_analysis_report.txt"
         report_path = os.path.join('uploads', report_filename)
+        
+        # Ensure the path is within uploads directory
+        abs_report_path = os.path.abspath(report_path)
+        abs_uploads_path = os.path.abspath('uploads')
+        
+        if not abs_report_path.startswith(abs_uploads_path):
+            raise ValueError("Invalid report path")
         
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join(report_lines))
