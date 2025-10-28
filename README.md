@@ -218,8 +218,13 @@ Edit `app.py` to customize:
 
 - Never commit your `.env` file with actual API keys
 - The `.env` file is gitignored by default
-- Uploaded files are stored locally in the `uploads/` directory
+- Uploaded files are stored locally in the `uploads/` directory (also gitignored)
+- All file paths are sanitized to prevent path traversal attacks
+- Debug mode is disabled by default (set `FLASK_ENV=development` to enable)
+- Error details are logged server-side only, not exposed to users
 - Consider implementing user authentication for production use
+- Use HTTPS in production
+- Consider implementing rate limiting for API endpoints
 
 ## Future Enhancements
 
