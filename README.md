@@ -100,15 +100,39 @@ Your bank statement should contain at least these columns (column names are flex
 - **Description**: Transaction description/narration
 - **Amount**: Transaction amount (or separate Debit/Credit columns)
 
-**Example CSV format:**
+The application supports multiple bank statement formats with automatic column detection:
+
+**Format 1 - Simple format:**
 ```csv
 Date,Description,Amount,Type
 2024-01-05,SALARY CREDIT,5000.00,credit
 2024-01-06,STARBUCKS,-5.50,debit
-2024-01-07,GROCERY STORE,-125.30,debit
 ```
 
-A sample statement file is included: `sample_statement.csv`
+**Format 2 - With sub-descriptions:**
+```csv
+Filter,Date,Description,Sub-description,Status,Type of Transaction,Amount
+July 2025,2025-07-31,mcdonald's,North York On (Apple Pay),posted,Debit,16.02
+```
+
+**Format 3 - With transaction types:**
+```csv
+First Bank Card,Transaction Type,Date Posted,Transaction Amount,Description
+5510290061711841,CREDIT,20250801,719.58,[DN] B/M PAY-PAIE PAY/PAY
+5510290061711841,DEBIT,20250730,125.43,WALMART GROCERY STORE
+```
+
+**Supported Date Formats:**
+- `YYYY-MM-DD` (2025-07-31)
+- `YYYYMMDD` (20250801)
+- `MM/DD/YYYY` (07/31/2025)
+- `DD/MM/YYYY` (31/07/2025)
+- And other common formats
+
+Sample statement files are included:
+- `sample_statement.csv` - Basic format
+- `sample_statement_format1.csv` - Format with sub-descriptions
+- `sample_statement_format2.csv` - Format with explicit transaction types
 
 ### How It Works
 

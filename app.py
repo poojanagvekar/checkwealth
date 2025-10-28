@@ -37,6 +37,12 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/demo')
+def demo():
+    """Render demo results page."""
+    return render_template('demo_results.html')
+
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """Handle file upload and process bank statement."""
@@ -64,9 +70,16 @@ def upload_file():
         monthly_analysis = analyzer.get_monthly_analysis(transactions)
         highlights = analyzer.get_monthly_highlights(transactions)
         
+        # Convert transactions to JSON-serializable format
+        transactions_copy = transactions.copy()
+        if 'date' in transactions_copy.columns:
+            transactions_copy['date'] = transactions_copy['date'].astype(str)
+        if 'month' in transactions_copy.columns:
+            transactions_copy = transactions_copy.drop(columns=['month'])
+        
         # Store results in session or database (simplified version uses temp file)
         results = {
-            'transactions': transactions.to_dict('records'),
+            'transactions': transactions_copy.to_dict('records'),
             'monthly_analysis': monthly_analysis,
             'highlights': highlights,
             'filename': filename

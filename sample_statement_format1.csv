@@ -1,0 +1,11 @@
+Filter,Date,Description,Sub-description,Status,Type of Transaction,Amount
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-31,mcdonald's,North York On (Apple Pay),posted,Debit,16.02
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-29,walmart,Grocery Shopping,posted,Debit,85.43
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-28,salary deposit,Monthly Salary,posted,Credit,3500.00
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-25,starbucks,Coffee Downtown,posted,Debit,5.75
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-22,uber,Ride to Airport,posted,Debit,32.50
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-20,netflix,Monthly Subscription,posted,Debit,15.99
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-18,target,Home Supplies,posted,Debit,67.80
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-15,shell gas,Gas Station,posted,Debit,45.00
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-12,whole foods,Organic Groceries,posted,Debit,124.56
+"July 2025, From date=2025-07-01, To date=2025-07-31",2025-07-10,verizon,Phone Bill,posted,Debit,89.99

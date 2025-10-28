@@ -58,46 +58,110 @@ class TransactionAnalyzer:
         # Detect and standardize columns
         df = self._standardize_columns(df)
         
+        # Parse dates with multiple formats
+        if 'date' in df.columns:
+            df['date'] = self._parse_dates(df['date'])
+        
         # Determine credit/debit
         df['type'] = df.apply(self._determine_transaction_type, axis=1)
         
         # Categorize transactions
         df['category'] = df.apply(self._categorize_transaction, axis=1)
         
-        # Parse dates
-        if 'date' in df.columns:
-            df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        
         return df
+    
+    def _parse_dates(self, date_series):
+        """
+        Parse dates with multiple format support.
+        """
+        # Try multiple date formats
+        date_formats = [
+            '%Y-%m-%d',      # 2025-07-31
+            '%Y%m%d',        # 20250801
+            '%m/%d/%Y',      # 07/31/2025
+            '%d/%m/%Y',      # 31/07/2025
+            '%Y/%m/%d',      # 2025/07/31
+            '%d-%m-%Y',      # 31-07-2025
+            '%m-%d-%Y',      # 07-31-2025
+        ]
+        
+        parsed_dates = pd.Series([pd.NaT] * len(date_series), index=date_series.index)
+        
+        for fmt in date_formats:
+            # Try parsing with this format
+            mask = parsed_dates.isna()
+            if mask.any():
+                try:
+                    parsed_dates[mask] = pd.to_datetime(
+                        date_series[mask], 
+                        format=fmt, 
+                        errors='coerce'
+                    )
+                except:
+                    pass
+        
+        # If still NaT, try general parsing
+        mask = parsed_dates.isna()
+        if mask.any():
+            parsed_dates[mask] = pd.to_datetime(date_series[mask], errors='coerce')
+        
+        return parsed_dates
     
     def _standardize_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Standardize column names from different bank formats.
         """
+        # Remove empty rows
+        df = df.dropna(how='all')
+        
         # Common column mappings
         column_mappings = {
             'transaction date': 'date',
             'trans date': 'date',
             'posting date': 'date',
+            'date posted': 'date',
             'value date': 'date',
             'description': 'description',
             'narration': 'description',
             'particulars': 'description',
             'details': 'description',
             'transaction details': 'description',
+            'sub-description': 'sub_description',
             'amount': 'amount',
+            'transaction amount': 'amount',
             'withdrawal': 'debit',
             'deposit': 'credit',
             'debit': 'debit',
             'credit': 'credit',
+            'type of transaction': 'transaction_type',
+            'transaction type': 'transaction_type',
             'balance': 'balance',
-            'closing balance': 'balance'
+            'closing balance': 'balance',
+            'status': 'status',
+            'filter': 'filter',
+            'first bank card': 'card_number'
         }
         
         # Rename columns
         for old_name, new_name in column_mappings.items():
             if old_name in df.columns:
                 df.rename(columns={old_name: new_name}, inplace=True)
+        
+        # Combine description and sub-description if both exist
+        if 'description' in df.columns and 'sub_description' in df.columns:
+            df['description'] = df.apply(
+                lambda row: f"{row['description']} {row['sub_description']}" 
+                if pd.notna(row['sub_description']) else row['description'],
+                axis=1
+            )
+        
+        # Handle transaction_type column (some banks specify CREDIT/DEBIT explicitly)
+        if 'transaction_type' in df.columns and 'amount' in df.columns:
+            # Convert amount based on transaction type
+            df['amount'] = df.apply(
+                lambda row: self._parse_amount_with_type(row),
+                axis=1
+            )
         
         # If amount column doesn't exist, try to create it from debit/credit
         if 'amount' not in df.columns:
@@ -124,7 +188,30 @@ class TransactionAnalyzer:
                     # Use third column as amount if not found
                     df['amount'] = pd.to_numeric(df.iloc[:, 2], errors='coerce')
         
+        # Clean up amount column - ensure it's numeric
+        if 'amount' in df.columns:
+            df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+        
         return df
+    
+    def _parse_amount_with_type(self, row: pd.Series) -> float:
+        """
+        Parse amount considering transaction type (CREDIT/DEBIT).
+        """
+        try:
+            amount = float(row.get('amount', 0))
+            trans_type = str(row.get('transaction_type', '')).upper()
+            
+            # Normalize amount based on transaction type
+            if trans_type == 'CREDIT':
+                return abs(amount)  # Credits are positive
+            elif trans_type == 'DEBIT':
+                return -abs(amount)  # Debits are negative
+            else:
+                # If type not specified, keep amount as is
+                return amount
+        except (ValueError, TypeError):
+            return 0
     
     def _determine_transaction_type(self, row: pd.Series) -> str:
         """
@@ -264,7 +351,9 @@ Respond with ONLY the category name in lowercase, or in format "category_name (s
                         'percentage': float(cat_total / total_debit * 100) if total_debit > 0 else 0
                     }
             
-            analysis[str(month)] = {
+            # Convert Period to string for JSON serialization
+            month_key = str(month)
+            analysis[month_key] = {
                 'total_income': float(total_credit),
                 'total_expenses': float(total_debit),
                 'net_savings': float(total_credit - total_debit),
