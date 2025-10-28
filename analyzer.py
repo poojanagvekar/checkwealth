@@ -70,7 +70,7 @@ class TransactionAnalyzer:
         
         return df
     
-    def _parse_dates(self, date_series):
+    def _parse_dates(self, date_series: pd.Series) -> pd.Series:
         """
         Parse dates with multiple format support.
         """
@@ -97,7 +97,7 @@ class TransactionAnalyzer:
                         format=fmt, 
                         errors='coerce'
                     )
-                except:
+                except (ValueError, TypeError, AttributeError):
                     pass
         
         # If still NaT, try general parsing
@@ -149,29 +149,32 @@ class TransactionAnalyzer:
         
         # Combine description and sub-description if both exist
         if 'description' in df.columns and 'sub_description' in df.columns:
-            df['description'] = df.apply(
-                lambda row: f"{row['description']} {row['sub_description']}" 
-                if pd.notna(row['sub_description']) else row['description'],
-                axis=1
-            )
+            # Vectorized operation instead of apply
+            mask = df['sub_description'].notna()
+            df.loc[mask, 'description'] = df.loc[mask, 'description'] + ' ' + df.loc[mask, 'sub_description']
         
         # Handle transaction_type column (some banks specify CREDIT/DEBIT explicitly)
         if 'transaction_type' in df.columns and 'amount' in df.columns:
-            # Convert amount based on transaction type
-            df['amount'] = df.apply(
-                lambda row: self._parse_amount_with_type(row),
-                axis=1
-            )
+            # Convert amount based on transaction type using vectorized operations
+            df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+            trans_type_upper = df['transaction_type'].str.upper()
+            
+            # Credit transactions should be positive, debit should be negative
+            credit_mask = trans_type_upper == 'CREDIT'
+            debit_mask = trans_type_upper == 'DEBIT'
+            
+            df.loc[credit_mask, 'amount'] = df.loc[credit_mask, 'amount'].abs()
+            df.loc[debit_mask, 'amount'] = -df.loc[debit_mask, 'amount'].abs()
         
         # If amount column doesn't exist, try to create it from debit/credit
         if 'amount' not in df.columns:
             if 'debit' in df.columns and 'credit' in df.columns:
-                # Combine debit and credit into amount (debit as negative, credit as positive)
-                df['amount'] = df.apply(
-                    lambda row: -abs(float(row['debit'])) if pd.notna(row['debit']) and row['debit'] != '' 
-                    else (abs(float(row['credit'])) if pd.notna(row['credit']) and row['credit'] != '' else 0),
-                    axis=1
-                )
+                # Vectorized operations for debit/credit conversion
+                df['debit'] = pd.to_numeric(df['debit'], errors='coerce').fillna(0)
+                df['credit'] = pd.to_numeric(df['credit'], errors='coerce').fillna(0)
+                
+                # Combine: debits are negative, credits are positive
+                df['amount'] = df['credit'] - df['debit']
         
         # Ensure required columns exist
         required_columns = ['date', 'description', 'amount']
@@ -193,25 +196,6 @@ class TransactionAnalyzer:
             df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
         
         return df
-    
-    def _parse_amount_with_type(self, row: pd.Series) -> float:
-        """
-        Parse amount considering transaction type (CREDIT/DEBIT).
-        """
-        try:
-            amount = float(row.get('amount', 0))
-            trans_type = str(row.get('transaction_type', '')).upper()
-            
-            # Normalize amount based on transaction type
-            if trans_type == 'CREDIT':
-                return abs(amount)  # Credits are positive
-            elif trans_type == 'DEBIT':
-                return -abs(amount)  # Debits are negative
-            else:
-                # If type not specified, keep amount as is
-                return amount
-        except (ValueError, TypeError):
-            return 0
     
     def _determine_transaction_type(self, row: pd.Series) -> str:
         """
