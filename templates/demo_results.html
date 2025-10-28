@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CheckWealth - Test Results View</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card { background: white; padding: 30px; border-radius: 15px; margin: 20px auto; max-width: 1000px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { color: #667eea; text-align: center; }
+        .stat { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: 10px; border-radius: 10px; min-width: 200px; }
+        .highlight { background: #f8f9ff; border-left: 4px solid #667eea; padding: 15px; margin: 10px 0; }
+        .category { background: #f8f9ff; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .bar { height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 5px; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body>
+    <h1 style="color: white; font-size: 3em;">💰 CheckWealth - Analysis Results</h1>
+    
+    <div class="card">
+        <h2>📊 Monthly Highlights</h2>
+        <div class="highlight">✨ Highest spending category: Grocery ($368.20)</div>
+        <div class="highlight">✨ Largest single expense: $156.70 (COSTCO SHOPPING)</div>
+        <div class="highlight">✨ Average daily spending: $29.70</div>
+        <div class="highlight">✨ Savings rate: 74.6%</div>
+    </div>
+    
+    <div class="card">
+        <h2>💵 Financial Overview (January 2024)</h2>
+        <div style="text-align: center;">
+            <div class="stat">
+                <div>Total Income</div>
+                <div style="font-size: 2em; font-weight: bold;">$5,000.00</div>
+            </div>
+            <div class="stat">
+                <div>Total Expenses</div>
+                <div style="font-size: 2em; font-weight: bold;">$722.17</div>
+            </div>
+            <div class="stat">
+                <div>Net Savings</div>
+                <div style="font-size: 2em; font-weight: bold;">$4,277.83</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>📈 Category Breakdown</h2>
+        <div class="category">
+            <div style="display: flex; justify-content: space-between;">
+                <div><strong style="color: #667eea;">Grocery</strong><br>3 transactions • 35.4%</div>
+                <div style="font-size: 1.3em; font-weight: bold; color: #764ba2;">$255.80</div>
+            </div>
+            <div class="bar"><div class="bar-fill" style="width: 35.4%"></div></div>
+        </div>
+        <div class="category">
+            <div style="display: flex; justify-content: space-between;">
+                <div><strong style="color: #667eea;">Eatouts</strong><br>3 transactions • 24.0%</div>
+                <div style="font-size: 1.3em; font-weight: bold; color: #764ba2;">$173.00</div>
+            </div>
+            <div class="bar"><div class="bar-fill" style="width: 24%"></div></div>
+        </div>
+        <div class="category">
+            <div style="display: flex; justify-content: space-between;">
+                <div><strong style="color: #667eea;">Transportation</strong><br>3 transactions • 15.8%</div>
+                <div style="font-size: 1.3em; font-weight: bold; color: #764ba2;">$113.75</div>
+            </div>
+            <div class="bar"><div class="bar-fill" style="width: 15.8%"></div></div>
+        </div>
+        <div class="category">
+            <div style="display: flex; justify-content: space-between;">
+                <div><strong style="color: #667eea;">Telecom</strong><br>1 transaction • 10.4%</div>
+                <div style="font-size: 1.3em; font-weight: bold; color: #764ba2;">$75.00</div>
+            </div>
+            <div class="bar"><div class="bar-fill" style="width: 10.4%"></div></div>
+        </div>
+    </div>
+</body>
+</html>
